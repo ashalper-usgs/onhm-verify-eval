@@ -1,4 +1,22 @@
 import os
+import sys
+
+# Command line argument is the current working directory. If no argument is specified, then
+# assume that the working directory is "/work". This is the directory that gets mapped to the
+# "external" file system when run in a docker container.
+dir = "/work"
+argc = len(sys.argv) - 1
+# print(sys.argv)
+# print(argc)
+
+if argc == 1:
+    print('setting dir = ' + sys.argv[1])
+    dir = sys.argv[1]
+
+# print(dir)
+os. chdir(dir)
+cwd = os.getcwd()
+print('prms_verifier: cwd = ' + cwd)
 
 # Assumes this runs in the "work_dir" where PRMS ran.
 fname = './output/NHM-PRMS.out'
@@ -9,9 +27,6 @@ fname = './output/NHM-PRMS.out'
 min_time = 1
 verified = True
 log_str = "True"
-
-# cwd = os.getcwd()
-# print('prms_verifier: cwd = ' + cwd)
 
 # If the "NHM-PRMS.out" file is not there, assume the run failed.
 if not os.path.isfile(fname):
@@ -54,7 +69,7 @@ fn_false = 'PRMS_VERIFIED_FALSE.txt'
 if os.path.isfile(fn_true):
     os.remove(fn_true)
 
-# Create an empty file with the name that indicates whether the PRMS run was valid or not.
+# Create a file with the name that indicates whether the PRMS run was valid or not.
 # The timestamp on this file indicates when the validation was performed.
 # This file should be removed whenever PRMS is run so that there is not confusion as to
 # whether the "current" run has been verified or not.
