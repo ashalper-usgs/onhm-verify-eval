@@ -8,13 +8,14 @@ fname = './output/NHM-PRMS.out'
 # failed.
 min_time = 1
 verified = True
+log_str = "True"
 
-cwd = os.getcwd()
-print('prms_verifier: cwd = ' + cwd)
+# cwd = os.getcwd()
+# print('prms_verifier: cwd = ' + cwd)
 
 # If the "NHM-PRMS.out" file is not there, assume the run failed.
 if not os.path.isfile(fname):
-    print('prms_verifier: ' + fname + ' not found')
+    log_str = 'prms_verifier: False ' + fname + ' not found'
     verified = False
     
 else:
@@ -30,7 +31,7 @@ else:
                 break
                 
         if not found:
-            print('prms_verifier: PRMS did not make it through the time loop')
+            log_str = 'prms_verifier: False PRMS did not make it through the time loop'
             verified = False
             
         else:
@@ -41,7 +42,7 @@ else:
             # If the run time is less than "min_time", then PRMS raced through not really running
             # and assumed the run failed.
             if mn < min_time:
-                print('prms_verifier: execution time ' + str(mn) + ':' + str(sc) + ' to short')
+                log_str = 'prms_verifier: False execution time ' + str(mn) + ':' + str(sc) + ' to short'
                 verified = False
 
 
@@ -53,6 +54,10 @@ fn_false = 'PRMS_VERIFIED_FALSE.txt'
 if os.path.isfile(fn_true):
     os.remove(fn_true)
 
+# Create an empty file with the name that indicates whether the PRMS run was valid or not.
+# The timestamp on this file indicates when the validation was performed.
+# This file should be removed whenever PRMS is run so that there is not confusion as to
+# whether the "current" run has been verified or not.
 if os.path.isfile(fn_false):
     os.remove(fn_false)
 
@@ -61,7 +66,6 @@ if verified:
 else:
     fn2 = fn_false
 
-try:
-    os.utime(fn2, None)
-except OSError:
-    open(fn2, 'a').close()
+f= open(fn2,"w+")
+f.write(log_str)
+f.close()
