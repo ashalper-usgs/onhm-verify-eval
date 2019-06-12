@@ -4,7 +4,7 @@ import sys
 # Command line argument is the current working directory. If no argument is specified, then
 # assume that the working directory is "/work". This is the directory that gets mapped to the
 # "external" file system when run in a docker container.
-dir = "/var/lib/nhm"
+dir = "/var/lib/nhm/NHM-PRMS_CONUS/"
 argc = len(sys.argv) - 1
 # print(sys.argv)
 # print(argc)
