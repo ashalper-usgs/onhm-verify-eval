@@ -1,4 +1,4 @@
 # onhm-verify-eval
 
-Contents of the Verivfication/Evaluation container for the ONHM
+Contents of the Verification/Evaluation container for the ONHM
 
