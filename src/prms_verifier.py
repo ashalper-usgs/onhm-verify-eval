@@ -1,86 +1,83 @@
 import os
 import sys
 
-# Command line argument is the current working directory. If no argument is specified, then
-# assume that the working directory is "/work". This is the directory that gets mapped to the
-# "external" file system when run in a docker container.
-dir = "/var/lib/nhm/NHM-PRMS_CONUS/"
-argc = len(sys.argv) - 1
-# print(sys.argv)
-# print(argc)
 
-if argc == 1:
-    print('setting dir = ' + sys.argv[1])
-    dir = sys.argv[1]
+def main(work_dir, fname, min_time):
 
-# print(dir)
-os. chdir(dir)
-cwd = os.getcwd()
-print('prms_verifier: cwd = ' + cwd)
+    verified = True
 
-# Assumes this runs in the "work_dir" where PRMS ran.
-fname = './output/NHM-PRMS.out'
-
-# The "minimum" run time is set to 1 minute. This means that if the PRMS
-# run takes less than one minute, it was too fast and assume that the run
-# failed.
-min_time = 1
-verified = True
-log_str = "True"
+    fn = work_dir + fname
 
 # If the "NHM-PRMS.out" file is not there, assume the run failed.
-if not os.path.isfile(fname):
-    log_str = 'prms_verifier: False ' + fname + ' not found'
-    verified = False
-    
-else:
+    if not os.path.isfile(fn):
+        print('prms_verifier: ' + fn + ' not found')
+        verified = False
 
-    # Read through the "NHM-PRMS.out" file. If the line that starts with "Execution elapsed time"
-    # is not there, then PRMS did not make it all the way through the time step loop and assumed the
-    # run failed.
-    with open(fname, 'r') as f:
-        found = False
-        for line in f:
-            if 'Execution elapsed time' in line:
-                found = True
-                break
-                
-        if not found:
-            log_str = 'prms_verifier: False PRMS did not make it through the time loop'
-            verified = False
-            
-        else:
-            tok = line.split()
-            mn = int(tok[3])
-            sc = float(tok[5])
+    else:
 
-            # If the run time is less than "min_time", then PRMS raced through not really running
-            # and assumed the run failed.
-            if mn < min_time:
-                log_str = 'prms_verifier: False execution time ' + str(mn) + ':' + str(sc) + ' to short'
+        # Read through the "NHM-PRMS.out" file. If the line that starts with "Execution elapsed time"
+        # is not there, then PRMS did not make it all the way through the time step loop and assumed the
+        # run failed.
+        with open(fn, 'r') as f:
+            found = False
+            for line in f:
+                if 'Execution elapsed time' in line:
+                    found = True
+                    break
+
+            if not found:
+                print('prms_verifier: PRMS did not make it through the time loop')
                 verified = False
 
+            else:
+                tok = line.split()
+                mn = int(tok[3])
+                sc = float(tok[5])
 
-print(verified)  # this should be the return value of the container
+                # If the run time is less than "min_time", then PRMS raced through not really running
+                # and assumed the run failed.
+                if mn < min_time:
+                    print('prms_verifier: execution time ' + str(mn) + ':' + str(sc) + ' to short')
+                    verified = False
 
-# Create an empty file where the name indicates the status of the last check.
-fn_true = 'PRMS_VERIFIED_TRUE.txt'
-fn_false = 'PRMS_VERIFIED_FALSE.txt'
-if os.path.isfile(fn_true):
-    os.remove(fn_true)
+    print(verified)  # this should be the return value of the container
 
-# Create a file with the name that indicates whether the PRMS run was valid or not.
-# The timestamp on this file indicates when the validation was performed.
-# This file should be removed whenever PRMS is run so that there is not confusion as to
-# whether the "current" run has been verified or not.
-if os.path.isfile(fn_false):
-    os.remove(fn_false)
+    # Create an empty file where the name indicates the status of the last check.
+    fn_true = 'PRMS_VERIFIED_TRUE.txt'
+    fn_false = 'PRMS_VERIFIED_FALSE.txt'
+    if os.path.isfile(fn_true):
+        os.remove(fn_true)
 
-if verified:
-    fn2 = fn_true
-else:
-    fn2 = fn_false
+    if os.path.isfile(fn_false):
+        os.remove(fn_false)
 
-f= open(fn2,"w+")
-f.write(log_str)
-f.close()
+    if verified:
+        fn2 = fn_true
+    else:
+        fn2 = fn_false
+
+    try:
+        os.utime(fn2, None)
+    except OSError:
+        open(fn2, 'a').close()
+
+
+if __name__ == '__main__':
+    # Assumes this runs in the "work_dir" where PRMS ran.
+    work_dir = '/var/lib/nhm/NHM-PRMS_CONUS/'
+    argc = len(sys.argv) - 1
+    # print(argc)
+
+    if argc == 1:
+        print('setting dir = ' + sys.argv[1])
+        work_dir = sys.argv[1]
+
+
+    fname = 'output/NHM-PRMS.out'
+
+    # The "minimum" run time is set to 1 minute. This means that if the PRMS
+    # run takes less than one minute, it was too fast and assume that the run
+    # failed.
+    min_time = 1
+
+    main(work_dir, fname, min_time)
