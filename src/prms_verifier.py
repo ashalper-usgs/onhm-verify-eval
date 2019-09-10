@@ -40,8 +40,6 @@ def main(work_dir, fname, min_time):
                     print('prms_verifier: execution time ' + str(mn) + ':' + str(sc) + ' to short')
                     verified = False
 
-    print(verified)  # this should be the return value of the container
-
     # Create an empty file where the name indicates the status of the last check.
     fn_true = 'PRMS_VERIFIED_TRUE.txt'
     fn_false = 'PRMS_VERIFIED_FALSE.txt'
@@ -52,18 +50,24 @@ def main(work_dir, fname, min_time):
         os.remove(fn_false)
 
     if verified:
-        fn2 = fn_true
+        fn2 = work_dir + fn_true
     else:
-        fn2 = fn_false
+        fn2 = work_dir + fn_false
 
     try:
         os.utime(fn2, None)
     except OSError:
         open(fn2, 'a').close()
 
+    if verified:
+        return 0
+    else:
+        return 1
+
 
 if __name__ == '__main__':
     # Assumes this runs in the "work_dir" where PRMS ran.
+    # If no command line argument given, assume operational NHM
     work_dir = '/var/lib/nhm/NHM-PRMS_CONUS/'
     argc = len(sys.argv) - 1
     # print(argc)
