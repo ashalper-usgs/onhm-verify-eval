@@ -77,7 +77,7 @@ if __name__ == '__main__':
         work_dir = sys.argv[1]
 
 
-    fname = 'output/NHM-PRMS.out'
+    fname = './prms.out'
 
     # The "minimum" run time is set to 1 minute. This means that if the PRMS
     # run takes less than one minute, it was too fast and assume that the run
